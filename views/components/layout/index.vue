@@ -22,8 +22,8 @@
               <Icon type="pound"></Icon> {{$t('c.layout.menu[0][0]')}}
             </template>
             <Menu-item
-              name="/"
-              @click.native="$router.push('/')">
+              name="/individual"
+              @click.native="$router.push('/individual')">
               <Icon type="person"></Icon> {{$t('c.layout.menu[0][1]')}}
             </Menu-item>
             <Menu-item

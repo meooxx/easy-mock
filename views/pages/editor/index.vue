@@ -11,7 +11,11 @@
           <Form label-position="top">
             <Form-item label="Method">
               <i-select v-model="temp.method">
-                <Option v-for="item in methods" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                <Option
+                  v-for="item in methods"
+                  :value="item.value"
+                  :key="item.value"
+                >{{ item.label }}</Option>
               </i-select>
             </Form-item>
             <Form-item label="URL">
@@ -26,7 +30,11 @@
               <i-switch v-model="autoClose"></i-switch>
             </Form-item>
             <Form-item>
-              <Button type="primary" long @click="submit">{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</Button>
+              <Button
+                type="primary"
+                long
+                @click="submit"
+              >{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</Button>
             </Form-item>
           </Form>
         </div>
@@ -64,10 +72,10 @@ if (typeof window !== 'undefined') {
 
 export default {
   name: 'editor',
-  data () {
+  data() {
     return {
       codeEditor: null,
-      autoClose: true,
+      autoClose: false,
       methods: [
         { label: 'get', value: 'get' },
         { label: 'post', value: 'post' },
@@ -77,28 +85,29 @@ export default {
       ],
       temp: {
         url: '',
-        mode: '{"data": {}}',
+        mode: '{"code":200, "message":"ok", "result": {},}',
         method: 'get',
         description: ''
       }
     }
   },
   computed: {
-    mockData () {
+    mockData() {
       return this.$store.state.mock.editorData.mock
     },
-    baseUrl () {
+    baseUrl() {
       return this.$store.state.mock.editorData.baseUrl
     },
-    projectId () {
+    projectId() {
       return this.$route.params.projectId
     },
-    isEdit () {
+    isEdit() {
       return !!this.$route.params.id && this.mockData
     }
   },
-  beforeRouteEnter (to, from, next) {
-    if (from.matched.length === 0) { // 防止编辑页刷新导致的显示异常（直接进入项目主页）
+  beforeRouteEnter(to, from, next) {
+    if (from.matched.length === 0) {
+      // 防止编辑页刷新导致的显示异常（直接进入项目主页）
       return next({
         path: `/project/${to.params.projectId}`,
         replace: true
@@ -106,7 +115,7 @@ export default {
     }
     next()
   },
-  mounted () {
+  mounted() {
     this.codeEditor = ace.edit(this.$refs.codeEditor)
     this.codeEditor.getSession().setMode('ace/mode/javascript')
     this.codeEditor.setTheme('ace/theme/monokai')
@@ -119,51 +128,90 @@ export default {
     this.codeEditor.on('change', this.onChange)
     this.codeEditor.commands.addCommand({
       name: 'save',
-      bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+
+      bindKey: { win: 'Ctrl-S', mac: 'Command-S' },
       exec: () => {
         this.submit()
       }
     })
 
     if (this.isEdit) {
-      this.autoClose = true
+      // this.autoClose = true
       this.temp.url = this.mockData.url.slice(1) // remove /
       this.temp.mode = this.mockData.mode
       this.temp.method = this.mockData.method
       this.temp.description = this.mockData.description
+      this.$nextTick(() => {
+        this.temp.method = this.mockData.method
+      })
     }
 
     this.$nextTick(() => {
       this.codeEditor.setValue(this.temp.mode)
       this.format()
     })
+    this.$nextTick(() => {
+      this.inititalTemp = { ...this.temp }
+    })
+    window.onbeforeunload = e => {
+      if (!this.isDity()) return
+      e = e || window.event
+      // 兼容IE8和Firefox 4之前的版本
+      if (e) {
+        e.returnValue = '关闭提示'
+      }
+      // Chrome, Safari, Firefox 4+, Opera 12+ , IE 9+
+      return '正在编辑要退出吗?'
+    }
+  },
+  beforeDestroy() {
+    window.onbeforeunload = null
+  },
+  beforeRouteLeave(to, from, next) {
+    if (this.isDity()) {
+      this.$Modal.confirm({
+        title: '确定离开?',
+        content: '<p>编辑内容尚未保存呢!</p>',
+        onOk: next,
+        onCancel: () => {
+          next(false)
+        }
+      })
+    } else {
+      next()
+    }
+
+    // console.log(to, from, next)
   },
   methods: {
-    convertUrl (url) {
+    convertUrl(url) {
       const newUrl = '/' + url
       return newUrl === '/'
         ? '/'
         : newUrl.replace(/\/\//g, '/').replace(/\/$/, '')
     },
-    format () {
+    format() {
       const context = this.codeEditor.getValue()
       let code = /^http(s)?/.test(context)
         ? context
         : jsBeautify.js_beautify(context, { indent_size: 2 })
       this.codeEditor.setValue(code)
     },
-    onChange () {
+    onChange() {
       this.temp.mode = this.codeEditor.getValue()
     },
-    close () {
-      this.$store.commit('mock/SET_EDITOR_DATA', {mock: null, baseUrl: ''})
+    close() {
+      this.$store.commit('mock/SET_EDITOR_DATA', {
+        mock: null,
+        baseUrl: ''
+      })
       this.$router.replace(`/project/${this.projectId}`)
     },
-    submit () {
+    submit() {
       const mockUrl = this.convertUrl(this.temp.url)
 
       try {
-        const value = (new Function(`return ${this.temp.mode}`))() // eslint-disable-line
+        const value = new Function(`return ${this.temp.mode}`)() // eslint-disable-line
         if (!value) {
           this.$Message.error(this.$t('p.detail.editor.submit.error[0]'))
           return
@@ -172,41 +220,60 @@ export default {
         }
       } catch (error) {
         if (!/^http(s)?:\/\//.test(this.temp.mode)) {
-          this.$Message.error(error.message || this.$t('p.detail.editor.submit.error[1]'))
+          this.$Message.error(
+            error.message || this.$t('p.detail.editor.submit.error[1]')
+          )
           return
         }
       }
 
       if (this.isEdit) {
-        api.mock.update({
-          data: {
-            ...this.temp,
-            id: this.mockData._id,
-            url: mockUrl
-          }
-        }).then((res) => {
-          if (res.data.success) {
-            this.$Message.success(this.$t('p.detail.editor.submit.updateSuccess'))
-            if (this.autoClose) this.close()
-          }
-        })
+        api.mock
+          .update({
+            data: {
+              ...this.temp,
+              id: this.mockData._id,
+              url: mockUrl
+            }
+          })
+          .then(res => {
+            if (res.data.success) {
+              this.$Message.success(
+                this.$t('p.detail.editor.submit.updateSuccess')
+              )
+              this.inititalTemp = this.temp
+              if (this.autoClose) this.close()
+            }
+          })
       } else {
-        api.mock.create({
-          data: {
-            ...this.temp,
-            url: mockUrl,
-            project_id: this.projectId
-          }
-        }).then((res) => {
-          if (res.data.success) {
-            this.$Message.success(this.$t('p.detail.create.success'))
-            this.close()
-          }
-        })
+        api.mock
+          .create({
+            data: {
+              ...this.temp,
+              url: mockUrl,
+              project_id: this.projectId
+            }
+          })
+          .then(res => {
+            if (res.data.success) {
+              this.$Message.success(this.$t('p.detail.create.success'))
+              this.inititalTemp = this.temp
+              this.close()
+            }
+          })
       }
     },
-    preview () {
-      window.open(this.baseUrl + this.mockData.url + '#!method=' + this.mockData.method)
+    preview() {
+      window.open(
+        this.baseUrl + this.mockData.url + '#!method=' + this.mockData.method
+      )
+    },
+    isDity() {
+      const keys = Object.keys(this.inititalTemp)
+      for (let key of keys) {
+        if (this.inititalTemp[key] !== this.temp[key]) return true
+      }
+      return false
     }
   }
 }

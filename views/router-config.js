@@ -24,8 +24,10 @@ export function createRouter () {
       {
         path: '/',
         component: layout,
+        // redirect: '/group',
         children: [
-          { path: '/', component: project },
+          { path: '', component: group },
+          { path: 'individual', component: project },
           { path: 'workbench', component: project },
           { path: 'group/:id', component: project },
           { path: 'group', component: group },

@@ -9,5 +9,9 @@ module.exports = {
   },
   "plugins": [
     "html"
-  ]
+  ],
+  rules: {
+    'space-before-function-paren': 'off'
+
+  }
 };

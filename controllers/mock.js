@@ -114,7 +114,7 @@ module.exports = class MockController {
     const opt = {
       skip: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      sort: '-create_at'
+      sort: 'url'
     }
 
     const where = { project: projectId }
