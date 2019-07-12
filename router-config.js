@@ -66,3 +66,4 @@ exports.api = apiRouter
   .post('/mock/update', mock.update)
   .post('/mock/delete', mock.delete)
   .post('/mock/export', mock.exportAPI)
+  .post('/mock/upload/:projectId', mock.upload)

@@ -80,6 +80,20 @@
               <Icon type="loop"></Icon>
               {{$t('p.detail.syncSwagger.action')}}
             </li>
+            <li @click="upload">
+              <Upload
+                :show-upload-list="false"
+                :format="['zip']"
+                :on-success="handleSuccess"
+                :headers="uploadHeaders"
+                :on-format-error="handleFormatError"
+                :action="uploadAPI"
+              >
+                <Icon type="upload"></Icon>
+                {{$t('p.detail.upload')}}
+              </Upload>
+            </li>
+
             <li @click="download">
               <Icon type="code-download"></Icon>
               {{$tc('p.detail.download', 1)}}
@@ -331,6 +345,14 @@ export default {
     tagFilters() {
       const tags = this.$store.state.mock.tags || []
       return tags.map(t => ({ label: t, value: t }))
+    },
+    uploadHeaders() {
+      return {
+        Authorization: 'Bearer ' + this.$store.state.user.token
+      }
+    },
+    uploadAPI() {
+      return `/api/mock/upload/${this.project._id}`
     }
   },
   methods: {
@@ -460,6 +482,17 @@ export default {
       } else {
         this.$router.push(`/editor/${this.project._id}`)
       }
+    },
+    handleFormatError(file) {
+      this.$Notice.warning({
+        // title: this.$tc('p.profile.formatError', 1),
+        // desc: this.$tc('p.profile.formatError', 2, { name: file.name })
+      })
+      console.log('upload mock api failed')
+    },
+    handleSuccess(response, file, fileList) {
+      // this.form.headImg = response.data.path
+      console.log('upload mock api successful')
     }
   },
   components: {

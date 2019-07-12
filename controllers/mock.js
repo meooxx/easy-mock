@@ -8,6 +8,7 @@ const Mock = require('mockjs')
 const axios = require('axios')
 const config = require('config')
 const pathToRegexp = require('path-to-regexp')
+const fs = require('fs')
 
 const util = require('../util')
 const ft = require('../models/fields_table')
@@ -67,6 +68,53 @@ module.exports = class MockController {
       mock
     })
   }
+
+  static async upload(ctx) {
+    const projectId = ctx.checkParams('projectId').notEmpty().value
+    const { file } = ctx.request.body.files // .files.file
+    // const reader = fs.createReadStream(file.path)
+    // reader.pipe(ctx.body)
+    // fs.read()
+    const { uid } = this.state.user
+    const project = await checkByProjectId(projectId, uid)
+    if (typeof project === 'string') {
+      ctx.body = ctx.util.refail(project)
+      return
+    }
+    const { type, size } = file
+    if (size > 1024 * 5) {
+      ctx.body = ctx.util.refail('文件过大')
+      return
+    }
+    if (type.indexOf('zip') === -1) {
+      ctx.body = ctx.util.refail('请上传压缩文件')
+      return
+    }
+    const buf = fs.readFileSync(file.path)
+    // const dirTmp = tmp.dirSync({ unsafeCleanup: true })
+    // const ws = fs.createWriteStream(dirTmp.name)
+    // ws.on('end', () => {
+    //   console.log(fs.readdirSync(dirTmp.name))
+
+    //   ctx.body = dirTmp
+    //   dirTmp.removeCallback()
+    // })
+
+    JSZip.loadAsync(buf).then(function(zip) {
+      const allMocksPromise = []
+      zip.forEach((_, file) => {
+        // const mock = {}
+        // mock.url = file.name
+        allMocksPromise.push(file.async('string'))
+      })
+      Promise.all(allMocksPromise).then(result => {
+        const mocks = result.filter(Boolean).map(m => JSON.parse(m))
+        console.log(mocks)
+
+        ctx.body = result
+      })
+    })
+  }
   static async create(ctx) {
     const uid = ctx.state.user.id
     const mode = ctx.checkBody('mode').notEmpty().value
@@ -110,7 +158,7 @@ module.exports = class MockController {
       return
     }
 
-    const [ mock ] = await MockProxy.newAndSave({
+    const [mock] = await MockProxy.newAndSave({
       project: projectId,
       description,
       method,
@@ -476,7 +524,20 @@ module.exports = class MockController {
     }
 
     apis.forEach(api => {
-      zip.file(`${api.project.url}${api.url}.json`, api.mode)
+      zip.file(
+        `${api.project.url}${api.url}.json`,
+        JSON.stringify(
+          {
+            mode: api.mode,
+            description: api.url,
+            method: api.method,
+            url: api.url,
+            tag: api.tag
+          },
+          null,
+          2
+        )
+      )
     })
 
     const content = await zip.generateAsync({ type: 'nodebuffer' })
