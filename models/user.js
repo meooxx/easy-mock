@@ -11,7 +11,8 @@ const schema = new Schema({
   create_at: {
     type: Date,
     default: Date.now
-  }
+  },
+  permisstion: Array
 })
 
 schema.index({ name: 1 }, { unique: true })

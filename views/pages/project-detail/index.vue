@@ -13,8 +13,16 @@
       <em-add icon="arrow-up-c" :bottom="90"></em-add>
     </Back-top>
     <transition name="fade" mode="out-in">
-      <project v-if="pageName === $t('p.detail.nav[1]')" key="a" :project-data="project"></project>
-      <div class="em-container" v-if="pageAnimated && pageName === $t('p.detail.nav[0]')" key="b">
+      <project
+        v-if="pageName === $t('p.detail.nav[1]')"
+        key="a"
+        :project-data="project"
+      ></project>
+      <div
+        class="em-container"
+        v-if="pageAnimated && pageName === $t('p.detail.nav[0]')"
+        key="b"
+      >
         <div class="em-proj-detail__info">
           <Row>
             <Col span="19">
@@ -31,19 +39,31 @@
             </Col>
             <Col span="5">
               <div>
-                <img :src="group ? '/public/images/group-default.png' : project.user.head_img" />
-                <p class="author">{{group ? group.name : project.user.nick_name}}</p>
+                <img
+                  :src="group ? '/public/images/group-default.png' : project.user.head_img"
+                />
+                <p
+                  class="author"
+                >{{group ? group.name : project.user.nick_name}}</p>
               </div>
             </Col>
           </Row>
         </div>
         <div class="em-proj-detail__switcher">
           <ul>
-            <li @click="openEditor()" v-shortkey="['ctrl', 'n']" @shortkey="openEditor()">
+            <li
+              @click="openEditor()"
+              v-shortkey="['ctrl', 'n']"
+              @shortkey="openEditor()"
+            >
               <Icon type="plus-round"></Icon>
               {{$t('p.detail.create.action')}}
             </li>
-            <li @click="handleWorkbench" v-shortkey="['ctrl', 'w']" @shortkey="handleWorkbench">
+            <li
+              @click="handleWorkbench"
+              v-shortkey="['ctrl', 'w']"
+              @shortkey="handleWorkbench"
+            >
               <transition name="zoom" mode="out-in">
                 <Icon
                   :type="project.extend.is_workbench ? 'android-star' : 'android-star-outline'"
@@ -52,7 +72,11 @@
               </transition>
               {{$t('p.detail.workbench')}}
             </li>
-            <li @click="updateBySwagger" v-shortkey="['ctrl', 's']" @shortkey="updateBySwagger">
+            <li
+              @click="updateBySwagger"
+              v-shortkey="['ctrl', 's']"
+              @shortkey="updateBySwagger"
+            >
               <Icon type="loop"></Icon>
               {{$t('p.detail.syncSwagger.action')}}
             </li>
@@ -138,8 +162,54 @@ export default {
             }
           ]
         }
-      ],
-      columns: [
+      ]
+    }
+  },
+  asyncData({ store, route }) {
+    store.commit('mock/INIT_REQUEST')
+    return store.dispatch('mock/FETCH', route)
+  },
+  mounted() {
+    this.$on(
+      'query',
+      debounce(keywords => {
+        this.keywords = keywords
+      }, 500)
+    )
+  },
+  computed: {
+    project() {
+      return this.$store.state.mock.project
+    },
+    list() {
+      const list = this.$store.state.mock.list
+      const reg = this.keywords && new RegExp(this.keywords, 'i')
+      return reg
+        ? list.filter(
+            item =>
+              reg.test(item.name) || reg.test(item.url) || reg.test(item.method)
+          )
+        : list
+    },
+    page() {
+      return {
+        description: this.project.user
+          ? this.$t('p.detail.header.description[0]')
+          : this.$t('p.detail.header.description[1]')
+      }
+    },
+    baseUrl() {
+      const baseUrl = location.origin + '/mock/' + this.project._id
+      return this.project.url === '/' ? baseUrl : baseUrl + this.project.url
+    },
+    group() {
+      return this.project.group
+    },
+    permisstion() {
+      return this.$store.state.user.permisstion
+    },
+    columns() {
+      return [
         {
           type: 'expand',
           width: 50,
@@ -191,7 +261,17 @@ export default {
         {
           title: this.$t('p.detail.columns[0]'),
           ellipsis: true,
-          key: 'description'
+          key: 'description',
+          width: 250
+        },
+        {
+          title: this.$t('p.detail.columns[2]'),
+          ellipsis: true,
+          key: 'tag',
+          filters: this.tagFilters,
+          filterMethod(value, row) {
+            return row.tag.indexOf(value) > -1
+          }
         },
         {
           title: this.$t('p.detail.columns[1]'),
@@ -205,23 +285,20 @@ export default {
                   <i-button
                     size="small"
                     title={this.$t('p.detail.action[0]')}
-                    onClick={this.preview.bind(this, params.row)}
-                  >
+                    onClick={this.preview.bind(this, params.row)}>
                     <icon type="eye" />
                   </i-button>
                   <i-button
                     size="small"
                     title={this.$t('p.detail.action[1]')}
-                    onClick={this.openEditor.bind(this, params.row)}
-                  >
+                    onClick={this.openEditor.bind(this, params.row)}>
                     <icon type="edit" />
                   </i-button>
                   <i-button
                     size="small"
                     title={this.$t('p.detail.action[2]')}
                     class="copy-url"
-                    onClick={this.clip.bind(this, params.row.url)}
-                  >
+                    onClick={this.clip.bind(this, params.row.url)}>
                     <icon type="link" />
                   </i-button>
                 </Button-group>
@@ -231,19 +308,16 @@ export default {
                   </i-button>
                   <dropdown-menu slot="list">
                     <dropdown-item
-                      nativeOnClick={this.clone.bind(this, params.row)}
-                    >
+                      nativeOnClick={this.clone.bind(this, params.row)}>
                       <icon type="ios-copy" /> {this.$t('p.detail.action[3]')}
                     </dropdown-item>
                     <dropdown-item
-                      nativeOnClick={this.download.bind(this, params.row._id)}
-                    >
-                      <icon type="ios-download" />{' '}
+                      nativeOnClick={this.download.bind(this, params.row._id)}>
+                      <icon type="ios-download" />
                       {this.$tc('p.detail.download', 2)}
                     </dropdown-item>
                     <dropdown-item
-                      nativeOnClick={this.remove.bind(this, params.row._id)}
-                    >
+                      nativeOnClick={this.remove.bind(this, params.row._id)}>
                       <icon type="trash-b" /> {this.$t('p.detail.action[4]')}
                     </dropdown-item>
                   </dropdown-menu>
@@ -253,47 +327,10 @@ export default {
           }
         }
       ]
-    }
-  },
-  asyncData({ store, route }) {
-    store.commit('mock/INIT_REQUEST')
-    return store.dispatch('mock/FETCH', route)
-  },
-  mounted() {
-    this.$on(
-      'query',
-      debounce(keywords => {
-        this.keywords = keywords
-      }, 500)
-    )
-  },
-  computed: {
-    project() {
-      return this.$store.state.mock.project
     },
-    list() {
-      const list = this.$store.state.mock.list
-      const reg = this.keywords && new RegExp(this.keywords, 'i')
-      return reg
-        ? list.filter(
-            item =>
-              reg.test(item.name) || reg.test(item.url) || reg.test(item.method)
-          )
-        : list
-    },
-    page() {
-      return {
-        description: this.project.user
-          ? this.$t('p.detail.header.description[0]')
-          : this.$t('p.detail.header.description[1]')
-      }
-    },
-    baseUrl() {
-      const baseUrl = location.origin + '/mock/' + this.project._id
-      return this.project.url === '/' ? baseUrl : baseUrl + this.project.url
-    },
-    group() {
-      return this.project.group
+    tagFilters() {
+      const tags = this.$store.state.mock.tags || []
+      return tags.map(t => ({ label: t, value: t }))
     }
   },
   methods: {

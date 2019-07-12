@@ -8,12 +8,14 @@
     <em-header
       :icon="page.icon"
       :title="page.title"
-      :description="page.description">
+      :description="page.description"
+    >
       <Radio-group
         v-model="filterByAuthor"
         type="button"
         @on-change="handleFilter"
-        v-if="page.type === 0">
+        v-if="page.type === 0"
+      >
         <Radio :label="$t('p.project.filter[0]')"></Radio>
         <Radio :label="$t('p.project.filter[1]')"></Radio>
         <Radio :label="$t('p.project.filter[2]')"></Radio>
@@ -22,20 +24,30 @@
     <Modal v-model="removeModal.show" width="360">
       <p slot="header" style="color:#f60;text-align:center">
         <Icon type="information-circled"></Icon>
-        <span> {{$t('p.project.modal.delete.title')}}</span>
+        <span>{{$t('p.project.modal.delete.title')}}</span>
       </p>
       <div>
-        <p>{{$tc('p.project.modal.delete.description', 1)}} <strong style="word-break:break-all;">
-          {{(removeModal.project.user && removeModal.project.user.nick_name) || (removeModal.project.group && removeModal.project.group.name) }} / {{removeModal.project.name}}</strong>
+        <p>
+          {{$tc('p.project.modal.delete.description', 1)}}
+          <strong
+            style="word-break:break-all;"
+          >{{(removeModal.project.user && removeModal.project.user.nick_name) || (removeModal.project.group && removeModal.project.group.name) }} / {{removeModal.project.name}}</strong>
         </p>
         <p>{{$tc('p.project.modal.delete.description', 2)}}</p>
-        <i-input style="margin-top: 10px;" v-model="removeModal.inputModel"
-          :placeholder="$t('p.project.modal.delete.placeholder')"></i-input>
+        <i-input
+          style="margin-top: 10px;"
+          v-model="removeModal.inputModel"
+          :placeholder="$t('p.project.modal.delete.placeholder')"
+        ></i-input>
       </div>
       <div slot="footer">
-        <Button type="error" size="large" long
-          :disabled="removeModal.project.name !== removeModal.inputModel"
-          @click="remove">{{$t('p.project.modal.delete.button')}}</Button>
+        <Button
+          type="error"
+          size="large"
+          long
+          :disabled="disabled"
+          @click="remove"
+        >{{$t('p.project.modal.delete.button')}}</Button>
       </div>
     </Modal>
     <transition name="fade">
@@ -45,36 +57,59 @@
             <div
               class="ivu-col ivu-col-span-6 list-complete-item"
               v-for="(item, index) in projects"
-              :key="index">
+              :key="index"
+            >
               <!-- 检查 user.id 防止闪烁 -->
-              <div class="em-project__item"
+              <div
+                class="em-project__item"
                 @click="go(item)"
                 :class="{
                   'is-join': page.type === 2 || (page.type === 0 && user.id && item.user._id !== user.id),
                   'is-group': page.type === 1
-                }">
+                }"
+              >
                 <div class="project-collect">
                   <transition name="zoom" mode="out-in">
-                    <Icon :type="item.extend.is_workbench ? 'android-star' : 'android-star-outline'"
-                          :key="item.extend.is_workbench"
-                          @click.native.stop="handleWorkbench(item.extend)"></Icon>
+                    <Icon
+                      :type="item.extend.is_workbench ? 'android-star' : 'android-star-outline'"
+                      :key="item.extend.is_workbench"
+                      @click.native.stop="handleWorkbench(item.extend)"
+                    ></Icon>
                   </transition>
                 </div>
                 <h2>{{item.name}}</h2>
                 <div class="project-description">{{item.description}}</div>
                 <div class="project-url">{{item.url}}</div>
                 <div class="project-member" v-if="page.type === 0">
-                  <img :src="item.user.head_img">
+                  <img :src="item.user.head_img" />
                   <img
                     :src="img.head_img"
                     v-for="(img, i) in item.members"
                     v-if="i < 5"
-                    :key="i">
+                    :key="i"
+                  />
                 </div>
                 <Button-group class="project-control">
-                  <Button type="ghost" icon="link" :title="$t('p.project.control[0]')" class="copy-url" @click="clip(item)"></Button>
-                  <Button type="ghost" icon="ios-copy" :title="$t('p.project.control[1]')" style="width: 34%;" @click.stop="clone(item)"></Button>
-                  <Button type="ghost" icon="trash-b" :title="$t('p.project.control[2]')" @click.stop="removeConfirm(item)"></Button>
+                  <Button
+                    type="ghost"
+                    icon="link"
+                    :title="$t('p.project.control[0]')"
+                    class="copy-url"
+                    @click="clip(item)"
+                  ></Button>
+                  <Button
+                    type="ghost"
+                    icon="ios-copy"
+                    :title="$t('p.project.control[1]')"
+                    style="width: 34%;"
+                    @click.stop="clone(item)"
+                  ></Button>
+                  <Button
+                    type="ghost"
+                    icon="trash-b"
+                    :title="$t('p.project.control[2]')"
+                    @click.stop="removeConfirm(item)"
+                  ></Button>
                 </Button-group>
               </div>
             </div>
@@ -97,7 +132,7 @@ import * as api from '../../api'
 
 export default {
   name: 'project',
-  data () {
+  data() {
     return {
       filterByAuthor: this.$t('p.project.filter[0]'),
       cliped: false,
@@ -108,18 +143,25 @@ export default {
       }
     }
   },
-  asyncData ({ store, route }) {
+  asyncData({ store, route }) {
     store.commit('project/INIT_REQUEST')
     store.dispatch('project/INIT_PAGE', route)
     return store.dispatch('project/FETCH')
   },
-  mounted () {
-    this.$on('query', debounce((keywords) => {
-      this.$store.dispatch('project/QUERY', keywords)
-    }, 500))
+  mounted() {
+    this.$on(
+      'query',
+      debounce(keywords => {
+        this.$store.dispatch('project/QUERY', keywords)
+      }, 500)
+    )
   },
   computed: {
-    page () {
+    disabled() {
+      const { removeModal } = this
+      return removeModal.project.name !== removeModal.inputModel
+    },
+    page() {
       const route = this.$route
       switch (route.fullPath) {
         case '/workbench':
@@ -142,25 +184,30 @@ export default {
           const groupName = (route.query && route.query.name) || ''
           return {
             title: this.$t('p.project.header.title[1]', { groupName }),
-            description: this.$t('p.project.header.description[1]', {groupName}),
+            description: this.$t('p.project.header.description[1]', {
+              groupName
+            }),
             placeholder: this.$t('p.project.placeholder[1]'),
             icon: 'person-stalker',
             type: 1
           }
       }
     },
-    projects () {
+    projects() {
       return this.$store.state.project.list
     },
-    user () {
+    user() {
       return this.$store.state.user
     },
-    keywords () {
+    keywords() {
       return this.$store.state.project.keywords
+    },
+    permisstion() {
+      return this.$store.state.user.permisstion || []
     }
   },
   watch: {
-    '$route': function () {
+    $route: function() {
       this.filterByAuthor = this.$t('p.project.filter[0]')
       this.$store.commit('project/INIT_REQUEST')
       this.$store.dispatch('project/INIT_PAGE', this.$route)
@@ -168,26 +215,26 @@ export default {
     }
   },
   methods: {
-    go (project) {
+    go(project) {
       if (!this.cliped) {
         this.$router.push(`/project/${project._id}`)
       }
     },
-    clip (project) {
+    clip(project) {
       const clipboard = new Clipboard('.copy-url', {
-        text () {
+        text() {
           return location.origin + '/mock/' + project._id + project.url
         }
       })
       this.cliped = true
-      clipboard.on('success', (e) => {
+      clipboard.on('success', e => {
         e.clearSelection()
         clipboard.destroy()
         this.cliped = false
         this.$Message.success(this.$t('p.project.copySuccess'))
       })
     },
-    handleFilter (value) {
+    handleFilter(value) {
       let filterByAuthor = 0
       if (value === this.$t('p.project.filter[1]')) {
         filterByAuthor = 1
@@ -198,36 +245,42 @@ export default {
       this.$store.commit('project/SET_REQUEST_PARAMS', { filterByAuthor })
       this.$store.dispatch('project/FETCH')
     },
-    handleWorkbench (projectExtend) {
+    handleWorkbench(projectExtend) {
       this.$store.dispatch('project/WORKBENCH', projectExtend)
     },
-    removeConfirm (project) {
+    removeConfirm(project) {
       this.removeModal.show = true
       this.removeModal.project = project
       this.removeModal.inputModel = ''
     },
-    remove () {
+    remove() {
       const projectId = this.removeModal.project._id
       this.$store.dispatch('project/REMOVE', projectId).then(() => {
         this.removeModal.show = false
-        this.$Message.success(this.$t('p.project.deleteSuccess', { name: this.removeModal.project.name }))
+        this.$Message.success(
+          this.$t('p.project.deleteSuccess', {
+            name: this.removeModal.project.name
+          })
+        )
         this.$store.commit('project/SET_REQUEST_PARAMS', { pageIndex: 1 })
         this.$store.dispatch('project/FETCH')
       })
     },
-    clone (project) {
-      return api.project.copy({
-        data: { id: project._id }
-      }).then((res) => {
-        if (res.data.success) {
-          this.$Message.success(this.$t('p.project.cloneSuccess'))
-          this.$store.commit('project/SET_REQUEST_PARAMS', { pageIndex: 1 })
-          this.$store.dispatch('project/FETCH')
-        }
-      })
+    clone(project) {
+      return api.project
+        .copy({
+          data: { id: project._id }
+        })
+        .then(res => {
+          if (res.data.success) {
+            this.$Message.success(this.$t('p.project.cloneSuccess'))
+            this.$store.commit('project/SET_REQUEST_PARAMS', { pageIndex: 1 })
+            this.$store.dispatch('project/FETCH')
+          }
+        })
     },
-    loading () {
-      this.$store.dispatch('project/FETCH').then((data) => {
+    loading() {
+      this.$store.dispatch('project/FETCH').then(data => {
         this.$refs.loading.stop()
         if (data && data.length === 0) {
           this.$refs.loading.destroy()

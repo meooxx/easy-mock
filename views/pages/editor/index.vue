@@ -26,7 +26,10 @@
             <Form-item :label="$t('p.detail.columns[0]')">
               <i-input v-model="temp.description"></i-input>
             </Form-item>
-            <Form-item :label="$t('p.detail.editor.autoClose')" v-if="isEdit">
+            <Form-item :label="$t('p.detail.columns[2]')">
+              <i-input v-model="temp.tag"></i-input>
+            </Form-item>
+            <Form-item :label="$t('p.detail.editor.autoClose')">
               <i-switch v-model="autoClose"></i-switch>
             </Form-item>
             <Form-item>
@@ -42,7 +45,7 @@
           <div class="em-proj-detail__switcher">
             <ul>
               <li @click="format">{{$t('p.detail.editor.control[0]')}}</li>
-              <li @click="preview" v-if="isEdit">{{$t('p.detail.editor.control[1]')}}</li>
+              <li @click="preview">{{$t('p.detail.editor.control[1]')}}</li>
               <li @click="close">{{$t('p.detail.editor.control[2]')}}</li>
             </ul>
           </div>
@@ -72,6 +75,11 @@ if (typeof window !== 'undefined') {
 
 export default {
   name: 'editor',
+  asyncData({ store, route }) {
+    const { projectId, id } = route.params
+    if (!id) return
+    return store.dispatch('mock/GET_MOCK_DATA', { projectId, id })
+  },
   data() {
     return {
       codeEditor: null,
@@ -87,7 +95,8 @@ export default {
         url: '',
         mode: '{"code":200, "message":"ok", "result": {},}',
         method: 'get',
-        description: ''
+        description: '',
+        tag: ''
       }
     }
   },
@@ -96,6 +105,12 @@ export default {
       return this.$store.state.mock.editorData.mock
     },
     baseUrl() {
+      const { projectUrl, projectId } = this.$store.state.mock.editorData
+      if (projectUrl && projectId) {
+        const baseUrl = location.origin + '/mock/' + projectId
+        return projectUrl === '/' ? baseUrl : baseUrl + projectUrl
+      }
+
       return this.$store.state.mock.editorData.baseUrl
     },
     projectId() {
@@ -106,13 +121,13 @@ export default {
     }
   },
   beforeRouteEnter(to, from, next) {
-    if (from.matched.length === 0) {
-      // 防止编辑页刷新导致的显示异常（直接进入项目主页）
-      return next({
-        path: `/project/${to.params.projectId}`,
-        replace: true
-      })
-    }
+    // if (from.matched.length === 0) {
+    // 防止编辑页刷新导致的显示异常（直接进入项目主页）
+    //  return next({
+    //    path: `/project/${to.params.projectId}`,
+    //    replace: true
+    //  })
+    // }
     next()
   },
   mounted() {
@@ -134,13 +149,13 @@ export default {
         this.submit()
       }
     })
-
     if (this.isEdit) {
       // this.autoClose = true
       this.temp.url = this.mockData.url.slice(1) // remove /
       this.temp.mode = this.mockData.mode
       this.temp.method = this.mockData.method
       this.temp.description = this.mockData.description
+      this.temp.tag = this.mockData.tag
       this.$nextTick(() => {
         this.temp.method = this.mockData.method
       })
@@ -207,9 +222,16 @@ export default {
       })
       this.$router.replace(`/project/${this.projectId}`)
     },
+    reload(mock, baseUrl) {
+      this.$store.commit('mock/SET_EDITOR_DATA', {
+        mock,
+        baseUrl
+      })
+      this.$router.replace(`/editor/${this.projectId}/${mock._id}`)
+      // this.$router.replace(`/project/${this.projectId}`)
+    },
     submit() {
       const mockUrl = this.convertUrl(this.temp.url)
-
       try {
         const value = new Function(`return ${this.temp.mode}`)() // eslint-disable-line
         if (!value) {
@@ -256,12 +278,17 @@ export default {
           })
           .then(res => {
             if (res.data.success) {
+              const { mock, projectUrl } = res.data.data
               this.$Message.success(this.$t('p.detail.create.success'))
               this.inititalTemp = this.temp
-              this.close()
+              this.reload(mock, this.getBaseUrl(projectUrl))
             }
           })
       }
+    },
+    getBaseUrl(projectUrl) {
+      const baseUrl = location.origin + '/mock/' + this.projectId
+      return projectUrl === '/' ? baseUrl : baseUrl + projectUrl
     },
     preview() {
       window.open(

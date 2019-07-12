@@ -24,7 +24,8 @@ export default {
     docs: {
       header: {
         title: '文档 | 更新日志',
-        description: '阅读文档能使你完全掌握 Easy Mock 的使用。 | 更新永无止境，只为让你开心。'
+        description:
+          '阅读文档能使你完全掌握 Easy Mock 的使用。 | 更新永无止境，只为让你开心。'
       }
     },
     group: {
@@ -40,13 +41,16 @@ export default {
         }
       },
       placeholder: '没有匹配到相关团队。| 想一起玩吗？快来创建团队呀。',
-      keyboards: [{
-        category: '操作',
-        list: '新建团队'
-      }],
+      keyboards: [
+        {
+          category: '操作',
+          list: '新建团队'
+        }
+      ],
       confirm: {
         delete: {
-          content: '此操作将 <strong>解散</strong> 或 <strong>退出</strong> 团队 <strong>{name}</strong> , 是否继续?'
+          content:
+            '此操作将 <strong>解散</strong> 或 <strong>退出</strong> 团队 <strong>{name}</strong> , 是否继续?'
         }
       },
       create: {
@@ -81,7 +85,8 @@ export default {
       ],
       confirm: {
         register: {
-          content: '该用户不存在, 是否根据当前输入的用户名和密码注册用户?注：请妥善保管好你的密码，目前无法提供找回密码的通道。',
+          content:
+            '该用户不存在, 是否根据当前输入的用户名和密码注册用户?注：请妥善保管好你的密码，目前无法提供找回密码的通道。',
           success: '注册成功'
         }
       }
@@ -95,9 +100,15 @@ export default {
         name: '归属 / 项目名 | 尽量简短表意。例：petstore',
         url: '项目基础 URL | 尽量简短表意。例：/nba',
         description: '项目描述 | 不填默认为项目名',
-        swagger: 'Swagger Docs API | 可选 | 如果后台有提供 Swagger 文档（并且没有验证授权的问题）, 于是我们可以在此处填写 Swagger 的接口地址, Easy Mock 会自动基于此接口创建 Mock 接口.',
-        member: ['邀请成员 协同编辑', '可选 | 团队项目下，该配置不生效', '用户昵称、用户名，支持模糊匹配'],
-        confirm: '请输入项目名称以进行确认 | 项目名确认 | 出于某些原因，删除也许会失败。但如果你执意删除，必须知道此操作无法撤消，这将永久删除',
+        swagger:
+          'Swagger Docs API | 可选 | 如果后台有提供 Swagger 文档（并且没有验证授权的问题）, 于是我们可以在此处填写 Swagger 的接口地址, Easy Mock 会自动基于此接口创建 Mock 接口.',
+        member: [
+          '邀请成员 协同编辑',
+          '可选 | 团队项目下，该配置不生效',
+          '用户昵称、用户名，支持模糊匹配'
+        ],
+        confirm:
+          '请输入项目名称以进行确认 | 项目名确认 | 出于某些原因，删除也许会失败。但如果你执意删除，必须知道此操作无法撤消，这将永久删除',
         button: {
           delete: '删除项目',
           create: '创建',
@@ -132,16 +143,26 @@ export default {
         avatar: '头像',
         upload: '上传新图片'
       },
-      formatError: '文件格式不正确 | 文件 {name} 格式不正确，请上传 jpg 或 png 格式的图片。',
+      formatError:
+        '文件格式不正确 | 文件 {name} 格式不正确，请上传 jpg 或 png 格式的图片。',
       updateSuccess: '更新成功 | 请重新登录，以完成数据同步。',
       validateError: '两次输入密码不一致!'
     },
     project: {
       header: {
         title: ['个人项目', '{groupName}', '工作台'],
-        description: ['这里将展示你的个人项目，当然也包括协同项目。', '欢迎来到{groupName}，与大家一起愉快的 Mock 吧。', '将正在进行的项目添加到工作台中以提高工作效率。']
+        description: [
+          '这里将展示你的个人项目，当然也包括协同项目。',
+          '欢迎来到{groupName}，与大家一起愉快的 Mock 吧。',
+          '将正在进行的项目添加到工作台中以提高工作效率。'
+        ]
       },
-      placeholder: ['想早点回家吗？快来创建 Mock 呀。', '团队项目更适合多人协作，快来创建项目吧。', '想起飞吗？快去将项目添加到工作台呀。', '没有匹配到相关项目。'],
+      placeholder: [
+        '想早点回家吗？快来创建 Mock 呀。',
+        '团队项目更适合多人协作，快来创建项目吧。',
+        '想起飞吗？快去将项目添加到工作台呀。',
+        '没有匹配到相关项目。'
+      ],
       filter: ['全部', '我创建的', '我加入的'],
       cloneSuccess: '克隆成功',
       copySuccess: '项目地址已复制到剪贴板',
@@ -149,7 +170,8 @@ export default {
       modal: {
         delete: {
           title: '删除确认',
-          description: '出于某些原因，删除也许会失败。但如果你执意删除，必须知道此操作无法撤消，这将永久删除 | 请输入项目名称以进行确认。',
+          description:
+            '出于某些原因，删除也许会失败。但如果你执意删除，必须知道此操作无法撤消，这将永久删除 | 请输入项目名称以进行确认。',
           button: '删除',
           placeholder: '项目名确认'
         }
@@ -166,9 +188,12 @@ export default {
       member: '项目成员',
       keyboards: [
         { category: '导航' },
-        { category: '操作', list: ['创建接口', '添加 / 移除工作台', '同步 Swagger'] }
+        {
+          category: '操作',
+          list: ['创建接口', '添加 / 移除工作台', '同步 Swagger']
+        }
       ],
-      columns: ['描述', '操作'],
+      columns: ['描述', '操作', '标签'],
       action: ['预览接口', '编辑接口', '复制接口地址', '克隆', '删除'],
       copySuccess: '接口地址已复制到剪贴板',
       syncSwagger: {
@@ -179,11 +204,15 @@ export default {
         syncResult: '同步结果',
         syncFailed: {
           title: '部分接口同步失败',
-          desc: '接口中存在语法错误，请检查是否为标准 JSON 格式（例：被忽略的双引号、定义方法等）。'
+          desc:
+            '接口中存在语法错误，请检查是否为标准 JSON 格式（例：被忽略的双引号、定义方法等）。'
         }
       },
       remove: {
-        confirm: ['该操作无法撤消，是否继续删除选中行? ', '该操作无法撤消，是否继续删除?'],
+        confirm: [
+          '该操作无法撤消，是否继续删除选中行? ',
+          '该操作无法撤消，是否继续删除?'
+        ],
         success: '删除成功'
       },
       create: {
@@ -199,7 +228,7 @@ export default {
       },
       editor: {
         title: ['更新接口', '创建接口'],
-        action: ['更新', '创建'],
+        action: ['更新', '创建', '更新退出'],
         autoClose: '自动关闭',
         control: ['格式化', '预览', '关闭'],
         submit: {
@@ -213,14 +242,19 @@ export default {
     keyboardShort: {
       modalTitle: '键盘快捷键',
       keyboards: [
-        { category: '全局导航', list: ['个人项目', '团队项目', '工作台', '文档'] },
+        {
+          category: '全局导航',
+          list: ['个人项目', '团队项目', '工作台', '文档']
+        },
         { category: '全局操作', list: ['创建项目', '搜索'] }
       ]
     },
     layout: {
       menu: [
         ['我的项目', '个人项目', '团队项目'],
-        '工作台', '数据', '文档',
+        '工作台',
+        '数据',
+        '文档',
         ['彩蛋', 'API 生成工具', 'Mock 语法'],
         ['编辑资料', '退出', '登录']
       ]
