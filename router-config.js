@@ -60,6 +60,7 @@ exports.api = apiRouter
   .post('/project/update_workbench', project.updateWorkbench)
 
   .get('/mock', mock.list)
+  .get('/mock/getData', mock.getData)
   .get('/mock/by_projects', mock.getAPIByProjectIds)
   .post('/mock/create', mock.create)
   .post('/mock/update', mock.update)

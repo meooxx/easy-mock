@@ -10,22 +10,25 @@ const resolve = file => path.resolve(__dirname, file)
 const isProd = process.env.NODE_ENV === 'production'
 const templatePath = resolve('../views/index.html')
 
-function createRenderer (bundle, options) {
+function createRenderer(bundle, options) {
   // https://github.com/vuejs/vue/blob/dev/packages/vue-server-renderer/README.md#why-use-bundlerenderer
-  return createBundleRenderer(bundle, Object.assign(options, {
-    cache: LRU({
-      max: 1000,
-      maxAge: 1000 * 60 * 15
-    }),
-    // this is only needed when vue-server-renderer is npm-linked
-    basedir: resolve('../dist'),
-    // recommended for performance
-    runInNewContext: false
-  }))
+  return createBundleRenderer(
+    bundle,
+    Object.assign(options, {
+      cache: LRU({
+        max: 1000,
+        maxAge: 1000 * 60 * 15
+      }),
+      // this is only needed when vue-server-renderer is npm-linked
+      basedir: resolve('../dist'),
+      // recommended for performance
+      runInNewContext: false
+    })
+  )
 }
 
 module.exports = class ViewMiddleware {
-  static render (app) {
+  static render(app) {
     let renderer, readyPromise
 
     if (isProd) {
@@ -34,12 +37,16 @@ module.exports = class ViewMiddleware {
       const clientManifest = require('../dist/vue-ssr-client-manifest.json')
       renderer = createRenderer(bundle, { template, clientManifest })
     } else {
-      readyPromise = require('../build/setup-dev-server')(app, templatePath, (bundle, options) => {
-        renderer = createRenderer(bundle, options)
-      })
+      readyPromise = require('../build/setup-dev-server')(
+        app,
+        templatePath,
+        (bundle, options) => {
+          renderer = createRenderer(bundle, options)
+        }
+      )
     }
 
-    function getHTML (context) {
+    function getHTML(context) {
       return new Promise((resolve, reject) => {
         const cb = (error, html) => {
           if (error) return reject(error)
@@ -50,7 +57,7 @@ module.exports = class ViewMiddleware {
       })
     }
 
-    return async function (ctx) {
+    return async function(ctx) {
       const context = {
         url: ctx.url,
         cookies: new Cookies(ctx.headers.cookie)
