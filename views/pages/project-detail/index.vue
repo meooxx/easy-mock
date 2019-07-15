@@ -80,7 +80,7 @@
               <Icon type="loop"></Icon>
               {{$t('p.detail.syncSwagger.action')}}
             </li>
-            <li >
+            <li>
               <Upload
                 :show-upload-list="false"
                 :format="['zip']"
@@ -277,7 +277,17 @@ export default {
           title: this.$t('p.detail.columns[0]'),
           ellipsis: true,
           key: 'description',
-          width: 250
+          width: 250,
+          render: (h, param) => {
+            const des = param.row.description
+            return (
+              <div>
+                <tooltip placement="top" content={des}>
+                  {des}
+                </tooltip>
+              </div>
+            )
+          }
         },
         {
           title: this.$t('p.detail.columns[2]'),
@@ -489,17 +499,16 @@ export default {
     },
     handleUploadError(err) {
       this.$Message.error({
-        render: h=>('div', [
-          err.message,
-          h('p', '一下是出错项: '),
-          err.data.map(d=>h('p', d))
-        ]),
+        render: h => h(
+          'div',
+          [err.message, h('p', '以下是出错项: '), err.data.map(d => h('p', d))]
+        ),
         duration: 3
       })
     },
     handleSuccess(response, file, fileList) {
-      if(response.code !== 200) {
-        this.handleUploadError(response) 
+      if (response.code !== 200) {
+        this.handleUploadError(response)
         return
       }
       // this.form.headImg = response.data.path

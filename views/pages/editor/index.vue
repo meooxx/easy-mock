@@ -7,40 +7,46 @@
       <em-spots :size="10"></em-spots>
       <div class="wrapper">
         <h2>{{isEdit ? $t('p.detail.editor.title[0]') : $t('p.detail.editor.title[1]')}}</h2>
-        <div class="em-editor__form">
-          <Form label-position="top">
-            <Form-item label="Method">
-              <i-select v-model="temp.method">
-                <Option
-                  v-for="item in methods"
-                  :value="item.value"
-                  :key="item.value"
-                >{{ item.label }}</Option>
-              </i-select>
-            </Form-item>
-            <Form-item label="URL">
-              <i-input v-model="temp.url">
-                <span slot="prepend">/</span>
-              </i-input>
-            </Form-item>
-            <Form-item :label="$t('p.detail.columns[0]')">
-              <i-input v-model="temp.description"></i-input>
-            </Form-item>
-            <Form-item :label="$t('p.detail.columns[2]')">
-              <i-input v-model="temp.tag"></i-input>
-            </Form-item>
-            <Form-item :label="$t('p.detail.editor.autoClose')">
-              <i-switch v-model="autoClose"></i-switch>
-            </Form-item>
-            <Form-item>
-              <Button
-                type="primary"
-                long
-                @click="submit"
-              >{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</Button>
-            </Form-item>
-          </Form>
-        </div>
+        <Tabs>
+          <TabPane label="设置接口">
+            <div class="em-editor__form">
+              <Form label-position="top">
+                <Form-item label="Method">
+                  <i-select v-model="temp.method">
+                    <Option
+                      v-for="item in methods"
+                      :value="item.value"
+                      :key="item.value"
+                    >{{ item.label }}</Option>
+                  </i-select>
+                </Form-item>
+                <Form-item label="URL">
+                  <i-input v-model="temp.url">
+                    <span slot="prepend">/</span>
+                  </i-input>
+                </Form-item>
+                <Form-item :label="$t('p.detail.columns[0]')">
+                  <i-input v-model="temp.description"></i-input>
+                </Form-item>
+                <Form-item :label="$t('p.detail.columns[2]')">
+                  <i-input v-model="temp.tag"></i-input>
+                </Form-item>
+                <Form-item :label="$t('p.detail.editor.autoClose')">
+                  <i-switch v-model="autoClose"></i-switch>
+                </Form-item>
+                <Form-item>
+                  <Button
+                    type="primary"
+                    long
+                    @click="submit"
+                  >{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</Button>
+                </Form-item>
+              </Form>
+            </div>
+          </TabPane>
+          <TabPane label="设置请求参数">标签二的内容</TabPane>
+        </Tabs>
+
         <div class="em-editor__control">
           <div class="em-proj-detail__switcher">
             <ul>
