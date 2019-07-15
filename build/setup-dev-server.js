@@ -15,9 +15,11 @@ const readFile = (fs, file) => {
   } catch (e) {}
 }
 
-module.exports = function setupDevServer (app, templatePath, cb) {
+module.exports = function setupDevServer(app, templatePath, cb) {
   let bundle, clientManifest, template, ready
-  const readyPromise = new Promise(r => { ready = r }) // eslint-disable-line
+  const readyPromise = new Promise(resolve => {
+    ready = resolve
+  }) // eslint-disable-line
 
   const update = () => {
     if (bundle && clientManifest) {
@@ -30,28 +32,44 @@ module.exports = function setupDevServer (app, templatePath, cb) {
   }
 
   template = fs.readFileSync(templatePath, 'utf-8')
-  clientConfig.entry.app = ['webpack-hot-middleware/client', clientConfig.entry.app]
+  clientConfig.entry.app = [
+    'webpack-hot-middleware/client?quiet=true',
+    clientConfig.entry.app
+  ]
   clientConfig.output.filename = '[name].js'
   clientConfig.plugins.push(
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin()
   )
-
   const clientCompiler = webpack(clientConfig)
   const devMidd = devMiddleware(clientCompiler, {
     publicPath: clientConfig.output.publicPath,
-    noInfo: true
+
+    stats: {
+      colors: true,
+      hash: false,
+      version: false,
+      timings: false,
+      assets: false,
+      chunks: false,
+      modules: false,
+      reasons: false,
+      children: false,
+      source: false,
+      errors: true,
+      errorDetails: true,
+      warnings: false,
+      publicPath: false
+    }
   })
   app.use(devMidd)
   clientCompiler.plugin('done', stats => {
     stats = stats.toJson()
     stats.errors.forEach(err => console.error(err))
-    stats.warnings.forEach(err => console.warn(err))
     if (stats.errors.length) return
-    clientManifest = JSON.parse(readFile(
-      devMidd.fileSystem,
-      'vue-ssr-client-manifest.json'
-    ))
+    clientManifest = JSON.parse(
+      readFile(devMidd.fileSystem, 'vue-ssr-client-manifest.json')
+    )
     update()
   })
 
