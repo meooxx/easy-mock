@@ -165,6 +165,7 @@ module.exports = class MockController {
       .notEmpty()
       .toLow()
       .in(['get', 'post', 'put', 'delete', 'patch']).value
+    const queryParams = ctx.checkBody('queryParams').value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
@@ -195,7 +196,8 @@ module.exports = class MockController {
       method,
       url,
       mode,
-      tag
+      tag,
+      queryParams
     })
 
     await redis.del('project:' + projectId)
@@ -313,6 +315,7 @@ module.exports = class MockController {
       .notEmpty()
       .toLow()
       .in(['get', 'post', 'put', 'delete', 'patch']).value
+    const queryParams = ctx.checkBody('queryParams').value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
@@ -333,7 +336,9 @@ module.exports = class MockController {
     api.method = method
     api.description = description
     api.tag = tag
+    api.queryParams = queryParams
 
+    console.log(ctx.body, queryParams)
     const existMock = await MockProxy.findOne({
       _id: { $ne: api.id },
       project: project.id,
@@ -345,7 +350,6 @@ module.exports = class MockController {
       ctx.body = ctx.util.refail('接口已经存在')
       return
     }
-
     await MockProxy.updateById(api)
     await redis.del('project:' + project.id)
     ctx.body = ctx.util.resuccess()
@@ -429,6 +433,17 @@ module.exports = class MockController {
           template: new Function(`return ${api.mode}`) // eslint-disable-line
         }
       })
+      const url = api.url.replace(/{/g, ':').replace(/}/g, '')
+      const token1 = pathToRegexp.parse(url).filter(u => typeof u !== 'string')
+      // .map(i => i.name)
+      console.log(
+        pathToRegexp.parse(url),
+        pathToRegexp(url).exec(mockURL),
+        ctx.query,
+        ctx.request.body,
+        ctx.params,
+        mockURL
+      )
 
       vm.run('Mock.mock(new Function("return " + mode)())') // 数据验证，检测 setTimeout 等方法
       apiData = vm.run('Mock.mock(template())') // 解决正则表达式失效的问题
