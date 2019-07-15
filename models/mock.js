@@ -18,6 +18,9 @@ const schema = new Schema({
   tag: {
     type: String
   },
+  queryParams: {
+    type: Array
+  },
   create_at: {
     type: Date,
     default: Date.now
