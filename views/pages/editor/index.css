@@ -56,6 +56,9 @@
 
     .wrapper {
       width: 100%;
+      .add-param {
+        margin-bottom: 20px;
+      }
     }
   }
 
@@ -65,6 +68,24 @@
     box-shadow: 0 2px 3px #777;
     border-radius: 4px;
     margin-bottom: 20px;
+  }
+
+  @d param {
+    background: #fff;
+    box-shadow: 0 2px 3px #777;
+    border-radius: 4px;
+    max-height: 550px;
+    overflow-y: scroll;
+    padding: 20px 20px 1px;
+    position: relative;
+    .add-param-form {
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 10px;
+    }
+    .del {
+      position: absolute;
+      right: 0;
+    }
   }
 
   @d control {

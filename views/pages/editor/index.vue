@@ -43,46 +43,52 @@
                 </Form-item>
               </Form>
             </div>
+            <div class="em-editor__control">
+              <div class="em-proj-detail__switcher">
+                <ul>
+                  <li @click="format">{{$t('p.detail.editor.control[0]')}}</li>
+                  <li @click="preview">{{$t('p.detail.editor.control[1]')}}</li>
+                  <li @click="close">{{$t('p.detail.editor.control[2]')}}</li>
+                </ul>
+              </div>
+            </div>
           </TabPane>
           <TabPane label="设置请求参数">
-            <code>
-              {{this.temp.params}}
-            </code>
-            <div class="em-editor__form">
-              <Form label-position="top">
-                <Form-item label="类型">
-                  <i-select v-model="temp.params.type">
-                    <Option
-                      v-for="item in paramsType"
-                      :value="item.value"
-                      :key="item.value"
-                    >{{ item.label }}</Option>
-                  </i-select>
-                </Form-item>
-                
-                <Form-item label="字段">
-                  <i-input v-model="temp.params.field"></i-input>
-                </Form-item>
-                <Form-item label="必填?">
-                  <i-switch v-model="temp.params.required"></i-switch>
-                </Form-item>
-                  
-                
-              </Form>
-            </div>
-              
+            <Button class="add-param" @click="addParam">add param</Button>
+            <template>
+              <div v-if="params.length>0" class="em-editor__param">
+                <Form
+                  label-position="top"
+                  v-for="param in params"
+                  :value="param.field"
+                  :key="param._id"
+                  class="add-param-form"
+                >
+                  <a @click="delParam(param._id)" class="del">删除</a>
+                  <Form-item label="类型">
+                    <i-select v-model="param.type">
+                      <Option
+                        v-for="item in paramsType"
+                        :value="item.value"
+                        :key="item.value"
+                      >{{ item.label }}</Option>
+                    </i-select>
+                  </Form-item>
+
+                  <Form-item label="字段">
+                    <i-input v-model="param.field"></i-input>
+                  </Form-item>
+                  <Form-item label="错误信息">
+                    <i-input v-model="param.errMsg"></i-input>
+                  </Form-item>
+                  <Form-item label="必填?">
+                    <i-switch v-model="param.required"></i-switch>
+                  </Form-item>
+                </Form>
+              </div>
+            </template>
           </TabPane>
         </Tabs>
-
-        <div class="em-editor__control">
-          <div class="em-proj-detail__switcher">
-            <ul>
-              <li @click="format">{{$t('p.detail.editor.control[0]')}}</li>
-              <li @click="preview">{{$t('p.detail.editor.control[1]')}}</li>
-              <li @click="close">{{$t('p.detail.editor.control[2]')}}</li>
-            </ul>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -125,22 +131,24 @@ export default {
         { label: 'patch', value: 'patch' }
       ],
       paramsType: [
-        {label: 'String', value:'String'},
-        {label: 'Object', value:'Object'},
-        {label: 'Array', value:'Array'},
-        {label: 'Number', value:'Number'},
+        { label: 'String', value: 'String' },
+        { label: 'Object', value: 'Object' },
+        { label: 'Array', value: 'Array' },
+        { label: 'Number', value: 'Number' }
       ],
       temp: {
         url: '',
         mode: '{"code":200, "message":"ok", "result": {},}',
         method: 'get',
         description: '',
-        tag: '',
-        params: {
-          require: 'false',
-          // type: 
+        tag: ''
+      },
+      params: [
+        {
+          _id: this.getId()
+          // field: 'param'
         }
-      }
+      ]
     }
   },
   computed: {
@@ -202,6 +210,7 @@ export default {
       this.$nextTick(() => {
         this.temp.method = this.mockData.method
       })
+      this.params = this.mockData.queryParams
     }
 
     this.$nextTick(() => {
@@ -291,14 +300,14 @@ export default {
           return
         }
       }
-
       if (this.isEdit) {
         api.mock
           .update({
             data: {
               ...this.temp,
               id: this.mockData._id,
-              url: mockUrl
+              url: mockUrl,
+              queryParams: this.params
             }
           })
           .then(res => {
@@ -311,12 +320,16 @@ export default {
             }
           })
       } else {
+        const queryParams = this.params
+          .filter(p => !!p.field)
+          .map(({ _id, ...rest }) => rest)
         api.mock
           .create({
             data: {
               ...this.temp,
               url: mockUrl,
-              project_id: this.projectId
+              project_id: this.projectId,
+              queryParams
             }
           })
           .then(res => {
@@ -344,6 +357,21 @@ export default {
         if (this.inititalTemp[key] !== this.temp[key]) return true
       }
       return false
+    },
+    getId() {
+      return Math.random()
+        .toString()
+        .replace('.', '')
+    },
+    addParam() {
+      const defaultParam = {
+        _id: this.getId()
+      }
+      this.params.push(defaultParam)
+      // console.log(this.temp.params)
+    },
+    delParam(id) {
+      this.params = this.params.filter(p => p._id !== id)
     }
   }
 }
