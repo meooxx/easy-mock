@@ -80,7 +80,7 @@
               <Icon type="loop"></Icon>
               {{$t('p.detail.syncSwagger.action')}}
             </li>
-            <li @click="upload">
+            <li >
               <Upload
                 :show-upload-list="false"
                 :format="['zip']"
@@ -88,6 +88,7 @@
                 :headers="uploadHeaders"
                 :on-format-error="handleFormatError"
                 :action="uploadAPI"
+                :on-error="handleUploadError"
               >
                 <Icon type="upload"></Icon>
                 {{$t('p.detail.upload')}}
@@ -483,16 +484,28 @@ export default {
         this.$router.push(`/editor/${this.project._id}`)
       }
     },
-    handleFormatError(file) {
-      this.$Notice.warning({
-        // title: this.$tc('p.profile.formatError', 1),
-        // desc: this.$tc('p.profile.formatError', 2, { name: file.name })
+    handleFormatError() {
+      this.$Message.error(this.$t('p.project.upload[0]'))
+    },
+    handleUploadError(err) {
+      this.$Message.error({
+        render: h=>('div', [
+          err.message,
+          h('p', '一下是出错项: '),
+          err.data.map(d=>h('p', d))
+        ]),
+        duration: 3
       })
-      console.log('upload mock api failed')
     },
     handleSuccess(response, file, fileList) {
+      if(response.code !== 200) {
+        this.handleUploadError(response) 
+        return
+      }
       // this.form.headImg = response.data.path
-      console.log('upload mock api successful')
+      this.$Message.success(this.$t('p.detail.create.success'))
+      this.$store.commit('mock/SET_REQUEST_PARAMS', { pageIndex: 1 })
+      this.$store.dispatch('mock/FETCH', this.$route)
     }
   },
   components: {

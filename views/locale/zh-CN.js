@@ -167,6 +167,7 @@ export default {
       cloneSuccess: '克隆成功',
       copySuccess: '项目地址已复制到剪贴板',
       deleteSuccess: '{name} 已删除',
+      upload: ['格式不对, 仅支持zip', '上传成功'],
       modal: {
         delete: {
           title: '删除确认',

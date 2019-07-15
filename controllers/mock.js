@@ -75,7 +75,7 @@ module.exports = class MockController {
     // const reader = fs.createReadStream(file.path)
     // reader.pipe(ctx.body)
     // fs.read()
-    const { uid } = this.state.user
+    const { id: uid } = ctx.state.user
     const project = await checkByProjectId(projectId, uid)
     if (typeof project === 'string') {
       ctx.body = ctx.util.refail(project)
@@ -91,27 +91,58 @@ module.exports = class MockController {
       return
     }
     const buf = fs.readFileSync(file.path)
-    // const dirTmp = tmp.dirSync({ unsafeCleanup: true })
-    // const ws = fs.createWriteStream(dirTmp.name)
-    // ws.on('end', () => {
-    //   console.log(fs.readdirSync(dirTmp.name))
-
-    //   ctx.body = dirTmp
-    //   dirTmp.removeCallback()
-    // })
-
-    JSZip.loadAsync(buf).then(function(zip) {
+    const valiedMehods = new Set(['get', 'post', 'put', 'delete', 'patch'])
+    const checkMock = (mock = {}) => {
+      // if(mock.tag)
+      const { description, url, method } = mock
+      if (!url || !description || !method) return false
+      if (url[0] !== '/') return false
+      if (!valiedMehods.has(method)) return false
+      return true
+    }
+    const MACOS = '__MACOSX'
+    await JSZip.loadAsync(buf).then(async function(zip) {
       const allMocksPromise = []
       zip.forEach((_, file) => {
-        // const mock = {}
-        // mock.url = file.name
-        allMocksPromise.push(file.async('string'))
+        if (file.name.indexOf(MACOS) === -1) {
+          allMocksPromise.push(file.async('string'))
+        }
       })
-      Promise.all(allMocksPromise).then(result => {
-        const mocks = result.filter(Boolean).map(m => JSON.parse(m))
-        console.log(mocks)
+      return Promise.all(allMocksPromise).then(async result => {
+        const mockUrl = new Set()
+        const mocks = result
+          .map(m => {
+            if (!m) return ''
+            const mk = JSON.parse(m)
+            if (!checkMock(mk)) return ''
+            if (!mockUrl.has(mk.url)) {
+              mockUrl.add(mk.url)
+              mk.project = projectId
+              return mk
+            }
+            return ''
+          })
+          .filter(Boolean)
 
-        ctx.body = result
+        if (mocks.length === 0) {
+          ctx.body = ctx.util.refail('上传记录是空')
+          return
+        }
+        try {
+          const res = await MockProxy.insertMany(mocks, {
+            ordered: false
+          })
+          await redis.del('project:' + projectId)
+          ctx.body = ctx.util.resuccess({
+            docs: JSON.stringify(res.map(r => r.url))
+          })
+        } catch (err) {
+          ctx.body = ctx.util.refail(
+            err.message,
+            err.code,
+            err.writeErrors.map(e => e.errmsg)
+          )
+        }
       })
     })
   }

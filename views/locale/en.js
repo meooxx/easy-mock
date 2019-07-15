@@ -146,6 +146,7 @@ export default {
       cloneSuccess: 'Copy Success',
       copySuccess: 'Project address is in clipboard',
       deleteSuccess: '{name} is deleted',
+      upload: ['Wrong formatter, zip only', 'upload successful'],
       modal: {
         delete: {
           title: 'Confirm Delete',

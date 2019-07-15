@@ -7,6 +7,10 @@ module.exports = class MockProxy {
     return Mock.insertMany(docs)
   }
 
+  static insertMany(docs, opts) {
+    return Mock.insertMany(docs, opts)
+  }
+
   static getById (mockId) {
     return Mock.findById(mockId).populate('project')
   }
