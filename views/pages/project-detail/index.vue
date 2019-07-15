@@ -282,8 +282,11 @@ export default {
             const des = param.row.description
             return (
               <div>
-                <tooltip placement="top" content={des}>
+                <tooltip  placement="top">
                   {des}
+                  <div slot="content" style="white-space: normal;word-break: break-all;">
+                    {des}
+                  </div>
                 </tooltip>
               </div>
             )

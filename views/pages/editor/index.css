@@ -1,5 +1,11 @@
 @import '../../styles/base/var.css';
 
+.ivu-tabs-nav .ivu-tabs-tab-active {
+  color: white;
+}
+.ivu-tabs-nav .ivu-tabs-tab:hover {
+  color: white;
+}
 @c editor {
   position: fixed;
   top: 0;
@@ -44,7 +50,8 @@
       padding: 6px;
       background: rgba(0,0,0,.5);
       border-radius: 30px;
-      margin-bottom: 20px;
+      margin-bottom: 5px;
+      margin-top: 5px;
     }
 
     .wrapper {
@@ -63,7 +70,7 @@
   @d control {
     .em-proj-detail__switcher {
       border-radius: 4px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       color: #fff;
       box-shadow: 0 2px 3px #bbb;
       font-size: 13px;

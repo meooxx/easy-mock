@@ -44,7 +44,34 @@
               </Form>
             </div>
           </TabPane>
-          <TabPane label="设置请求参数">标签二的内容</TabPane>
+          <TabPane label="设置请求参数">
+            <code>
+              {{this.temp.params}}
+            </code>
+            <div class="em-editor__form">
+              <Form label-position="top">
+                <Form-item label="类型">
+                  <i-select v-model="temp.params.type">
+                    <Option
+                      v-for="item in paramsType"
+                      :value="item.value"
+                      :key="item.value"
+                    >{{ item.label }}</Option>
+                  </i-select>
+                </Form-item>
+                
+                <Form-item label="字段">
+                  <i-input v-model="temp.params.field"></i-input>
+                </Form-item>
+                <Form-item label="必填?">
+                  <i-switch v-model="temp.params.required"></i-switch>
+                </Form-item>
+                  
+                
+              </Form>
+            </div>
+              
+          </TabPane>
         </Tabs>
 
         <div class="em-editor__control">
@@ -97,12 +124,22 @@ export default {
         { label: 'delete', value: 'delete' },
         { label: 'patch', value: 'patch' }
       ],
+      paramsType: [
+        {label: 'String', value:'String'},
+        {label: 'Object', value:'Object'},
+        {label: 'Array', value:'Array'},
+        {label: 'Number', value:'Number'},
+      ],
       temp: {
         url: '',
         mode: '{"code":200, "message":"ok", "result": {},}',
         method: 'get',
         description: '',
-        tag: ''
+        tag: '',
+        params: {
+          require: 'false',
+          // type: 
+        }
       }
     }
   },
