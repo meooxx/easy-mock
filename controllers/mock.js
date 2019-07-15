@@ -434,16 +434,31 @@ module.exports = class MockController {
         }
       })
       const url = api.url.replace(/{/g, ':').replace(/}/g, '')
-      const token1 = pathToRegexp.parse(url).filter(u => typeof u !== 'string')
+      let keys = []
+      // const token1 = pathToRegexp.parse(url).filter(u => typeof u !== 'string')
       // .map(i => i.name)
-      console.log(
-        pathToRegexp.parse(url),
-        pathToRegexp(url).exec(mockURL),
-        ctx.query,
-        ctx.request.body,
-        ctx.params,
-        mockURL
-      )
+      const allParams = {}
+      const arr = pathToRegexp(url, keys).exec(mockURL)
+      const sliceKey = arr.slice(1)
+      keys = keys.forEach((k, index) => {
+        // if(k)
+        allParams[k.name] = sliceKey[index]
+      })
+      Object.assign(allParams, ctx.query, ctx.request.body)
+      const { queryParams = [] } = api
+      // const toString = Object.prototype.toString
+      console.log(queryParams, allParams)
+      const { field, errMsg } =
+        queryParams.find((q = {}) => {
+          const { required, field } = q
+          return required && !allParams[field]
+        }) || {}
+      if (field) {
+        ctx.body = ctx.util.refail(
+          errMsg || `expect "${field}" is required, but got ${allParams[field]}`
+        )
+        return
+      }
 
       vm.run('Mock.mock(new Function("return " + mode)())') // 数据验证，检测 setTimeout 等方法
       apiData = vm.run('Mock.mock(template())') // 解决正则表达式失效的问题

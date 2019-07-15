@@ -512,10 +512,10 @@ export default {
     handleSuccess(response, file, fileList) {
       if (response.code !== 200) {
         this.handleUploadError(response)
-        return
+      }else {
+        this.$Message.success(this.$t('p.detail.create.success'))
       }
       // this.form.headImg = response.data.path
-      this.$Message.success(this.$t('p.detail.create.success'))
       this.$store.commit('mock/SET_REQUEST_PARAMS', { pageIndex: 1 })
       this.$store.dispatch('mock/FETCH', this.$route)
     }
