@@ -435,27 +435,81 @@ module.exports = class MockController {
       })
       const url = api.url.replace(/{/g, ':').replace(/}/g, '')
       let keys = []
-      // const token1 = pathToRegexp.parse(url).filter(u => typeof u !== 'string')
-      // .map(i => i.name)
       const allParams = {}
+
+      // arrary to key, value
+      // [{field:'userId', type: 'String'}] --> {[userId]: {}}
+      const { queryParams = [] } = api
+      const queryParamKV = {}
+      queryParams.forEach(q => {
+        if (!queryParamKV[q.field]) {
+          queryParamKV[q.field] = q
+        }
+      })
+
+      // collect params in path
       const arr = pathToRegexp(url, keys).exec(mockURL)
       const sliceKey = arr.slice(1)
+      // e.g.route: /:id/dd path /11222/dd
+      // allParams ={ id: 11222 }
       keys = keys.forEach((k, index) => {
-        // if(k)
+        // key is not in db, skip check
+        if (queryParamKV[k.name]) return
+
+        // param in path should not be empty
+        // emmm, route would not match, if got undefined param
+        if (sliceKey === undefined) console.log('err')
         allParams[k.name] = sliceKey[index]
       })
-      Object.assign(allParams, ctx.query, ctx.request.body)
-      const { queryParams = [] } = api
-      // const toString = Object.prototype.toString
+      const paramsInQueryAndPath = Object.assign({}, allParams, ctx.query)
+
+      // convert string type  to  Number type
+      // params value in path or query are always has type of string
+      // e.g. /:id?userId=111, /1111?userId=2222,
+      // typeof id === 'string' typeof userId === 'string'
+
+      Object.keys(paramsInQueryAndPath).forEach(k => {
+        if (queryParamKV[k] === undefined) return
+        if (queryParamKV[k] === null) return
+        const { type } = queryParamKV[k]
+        const value = paramsInQueryAndPath[k]
+        // const t = convertMap[type].call(field)
+        if (type === 'Number') {
+          const convertedValue = String.prototype.parseInt.call(value)
+          if (!isNaN(convertedValue)) {
+            allParams[k] = convertedValue
+          }
+
+          // type mismatch and will throw err in check phase
+          allParams[k] = value
+          return
+        }
+        allParams[k] = value
+      })
+
+      // assign param in path, query or body
+      // Object.assign(allParams, ctx.query, ctx.request.body)
+      Object.assign(allParams, ctx.request.body)
+
+      const toString = Object.prototype.toString
       console.log(queryParams, allParams)
-      const { field, errMsg } =
-        queryParams.find((q = {}) => {
-          const { required, field } = q
-          return required && !allParams[field]
-        }) || {}
-      if (field) {
+      // iterator queryParam and find item does not passed
+      const valueNotPassed = queryParams.find(qp => {
+        const { type, field, required } = qp
+        const valueInParams = allParams[field]
+        const isValid = toString.call(valueInParams).slice(8, -1) === type
+        if (!isValid) return true
+        if (required) {
+          return !valueInParams && !isValid
+        }
+        return false
+      })
+      if (valueNotPassed) {
+        const { type, field, errMsg, required } = valueNotPassed
         ctx.body = ctx.util.refail(
-          errMsg || `expect "${field}" is required, but got ${allParams[field]}`
+          errMsg ||
+            `expect ${type}: ${field}" ${required ? 'required' : ''},
+            but got ${typeof allParams[field]}: ${JSON.stringify(allParams[field])}`
         )
         return
       }

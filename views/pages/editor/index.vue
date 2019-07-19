@@ -54,7 +54,10 @@
             </div>
           </TabPane>
           <TabPane label="设置请求参数">
-            <Button class="add-param" @click="addParam">add param</Button>
+            <Badge :count="params.length">
+              <Button class="add-param" @click="addParam">add param</Button>
+            </Badge>
+
             <template>
               <div v-if="params.length>0" class="em-editor__param">
                 <Form

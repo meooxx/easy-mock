@@ -172,7 +172,7 @@ export default {
             icon: 'code-working',
             type: 2 // 0.个人项目 1.团队项目 2.工作台
           }
-        case '/':
+        case '/individual':
           return {
             title: this.$t('p.project.header.title[0]'),
             description: this.$t('p.project.header.description[0]'),
