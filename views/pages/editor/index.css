@@ -74,8 +74,8 @@
     background: #fff;
     box-shadow: 0 2px 3px #777;
     border-radius: 4px;
-    height: 550px;
-    max-height: 550px;
+    height: 400px;
+    max-height: 400px;
     overflow-y: scroll;
     padding: 20px 20px 1px;
     position: relative;
@@ -85,7 +85,7 @@
     }
     .del {
       position: absolute;
-      right: 0;
+      right: 20px;
     }
   }
 

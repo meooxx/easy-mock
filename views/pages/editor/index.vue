@@ -34,23 +34,8 @@
                 <Form-item :label="$t('p.detail.editor.autoClose')">
                   <i-switch v-model="autoClose"></i-switch>
                 </Form-item>
-                <Form-item>
-                  <Button
-                    type="primary"
-                    long
-                    @click="submit"
-                  >{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</Button>
-                </Form-item>
+                <Form-item></Form-item>
               </Form>
-            </div>
-            <div class="em-editor__control">
-              <div class="em-proj-detail__switcher">
-                <ul>
-                  <li @click="format">{{$t('p.detail.editor.control[0]')}}</li>
-                  <li @click="preview">{{$t('p.detail.editor.control[1]')}}</li>
-                  <li @click="close">{{$t('p.detail.editor.control[2]')}}</li>
-                </ul>
-              </div>
             </div>
           </TabPane>
           <TabPane label="设置请求参数">
@@ -92,6 +77,19 @@
             </template>
           </TabPane>
         </Tabs>
+        
+        <div class="em-editor__control">
+          <div class="em-proj-detail__switcher">
+            <ul>
+              <li @click="format">{{$t('p.detail.editor.control[0]')}}</li>
+              <li @click="preview">{{$t('p.detail.editor.control[1]')}}</li>
+              <li
+                @click="submit"
+              >{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</li>
+              <li @click="close">{{$t('p.detail.editor.control[2]')}}</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>
