@@ -80,7 +80,7 @@
               <Icon type="loop"></Icon>
               {{$t('p.detail.syncSwagger.action')}}
             </li>
-            <li>
+            <li class="upload">
               <Upload
                 :show-upload-list="false"
                 :format="['zip']"
@@ -90,8 +90,10 @@
                 :action="uploadAPI"
                 :on-error="handleUploadError"
               >
-                <Icon type="upload"></Icon>
-                {{$t('p.detail.upload')}}
+                <div class="upload">
+                  <Icon type="upload"></Icon>
+                  {{$t('p.detail.upload')}}
+                </div>
               </Upload>
             </li>
 
@@ -282,9 +284,11 @@ export default {
             const des = param.row.description
             return (
               <div>
-                <tooltip  placement="top">
+                <tooltip placement="top">
                   {des}
-                  <div slot="content" style="white-space: normal;word-break: break-all;">
+                  <div
+                    slot="content"
+                    style="white-space: normal;word-break: break-all;">
                     {des}
                   </div>
                 </tooltip>
@@ -502,17 +506,19 @@ export default {
     },
     handleUploadError(err) {
       this.$Message.error({
-        render: h => h(
-          'div',
-          [err.message, h('p', '以下是出错项: '), err.data.map(d => h('p', d))]
-        ),
+        render: h =>
+          h('div', [
+            err.message,
+            h('p', '以下是出错项: '),
+            err.data && err.data.map(d => h('p', d))
+          ]),
         duration: 3
       })
     },
     handleSuccess(response, file, fileList) {
       if (response.code !== 200) {
         this.handleUploadError(response)
-      }else {
+      } else {
         this.$Message.success(this.$t('p.detail.create.success'))
       }
       // this.form.headImg = response.data.path

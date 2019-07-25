@@ -89,7 +89,7 @@
     @utils-user-select none;
 
     ul {
-      display: table;
+      display: flex;
       table-layout: fixed;
       width: 100%;
     }
@@ -111,11 +111,20 @@
       display: table-cell;
       cursor: pointer;
       transition: var(--all-transition);
+      flex: 1 1 0;
 
       &:hover {
         background: color(#252d47 a(96%));
       }
     }
+    .upload {
+      padding: 0;
+    }
+    .ivu-upload-select {
+      padding: 15px 0px;
+      width: 100%;
+    }
+
   }
 
   @d members {

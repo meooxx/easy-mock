@@ -138,6 +138,10 @@ export default {
     },
     submit () {
       this.modalShow = false
+      if (!this.groupName) {
+        this.$Message.warning(this.$t('p.group.join.warning'))
+        return
+      }
       if (this.tabName === 'create') {
         this.$store.dispatch('group/ADD', this.groupName).then(body => {
           if (body.success) this.$Message.success(this.$t('p.group.create.success'))

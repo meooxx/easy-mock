@@ -82,7 +82,7 @@ module.exports = class MockController {
       return
     }
     const { type, size } = file
-    if (size > 1024 * 5) {
+    if (size > 1024 * 1024 * 5) {
       ctx.body = ctx.util.refail('文件过大')
       return
     }
@@ -165,7 +165,10 @@ module.exports = class MockController {
       .notEmpty()
       .toLow()
       .in(['get', 'post', 'put', 'delete', 'patch']).value
-    const queryParams = ctx.checkBody('queryParams').value
+    let queryParams = ctx.checkBody('queryParams').value
+    if (queryParams.length !== 0) {
+      queryParams = queryParams.filter(q => !!q.field)
+    }
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
@@ -315,8 +318,11 @@ module.exports = class MockController {
       .notEmpty()
       .toLow()
       .in(['get', 'post', 'put', 'delete', 'patch']).value
-    const queryParams = ctx.checkBody('queryParams').value
-
+    // const queryParams = ctx.checkBody('queryParams').value
+    let queryParams = ctx.checkBody('queryParams').value
+    if (queryParams.length !== 0) {
+      queryParams = queryParams.filter(q => !!q.field)
+    }
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
       return
@@ -447,70 +453,82 @@ module.exports = class MockController {
         }
       })
 
-      // collect params in path
+      // collect that params in path
+
       const arr = pathToRegexp(url, keys).exec(mockURL)
       const sliceKey = arr.slice(1)
       // e.g.route: /:id/dd path /11222/dd
+      // keys = [id]  sliceKey=[ 11222 ]
       // allParams ={ id: 11222 }
-      keys = keys.forEach((k, index) => {
+      keys.forEach((k, index) => {
         // key is not in db, skip check
-        if (queryParamKV[k.name]) return
+        if (!queryParamKV[k.name]) return
 
         // param in path should not be empty
         // emmm, route would not match, if got undefined param
-        if (sliceKey === undefined) console.log('err')
+        if (sliceKey[index] === undefined) {
+          console.error('got error undefined param')
+        }
         allParams[k.name] = sliceKey[index]
       })
       const paramsInQueryAndPath = Object.assign({}, allParams, ctx.query)
 
-      // convert string type  to  Number type
-      // params value in path or query are always has type of string
+      // Type conversion
+      // convert string type  to  Number type, string->boolean
+      // params in path or query that always has string type
       // e.g. /:id?userId=111, /1111?userId=2222,
       // typeof id === 'string' typeof userId === 'string'
-
       Object.keys(paramsInQueryAndPath).forEach(k => {
         if (queryParamKV[k] === undefined) return
         if (queryParamKV[k] === null) return
-        const { type } = queryParamKV[k]
+        const boolLookup = {
+          false: false,
+          true: true
+        }
+        const { type = 'String' } = queryParamKV[k]
         const value = paramsInQueryAndPath[k]
+        allParams[k] = value
         // const t = convertMap[type].call(field)
         if (type === 'Number') {
-          const convertedValue = String.prototype.parseInt.call(value)
+          const convertedValue = parseInt(value, 10)
+          // if the type mismatch, it will throw err in check phase
+          allParams[k] = value
           if (!isNaN(convertedValue)) {
             allParams[k] = convertedValue
           }
-
-          // type mismatch and will throw err in check phase
-          allParams[k] = value
-          return
         }
-        allParams[k] = value
+        if (type === 'Boolean' && boolLookup[value] !== undefined) {
+          allParams[k] = boolLookup[value]
+        }
       })
 
       // assign param in path, query or body
       // Object.assign(allParams, ctx.query, ctx.request.body)
       Object.assign(allParams, ctx.request.body)
-
+      console.log(queryParams, allParams, ctx.request.body)
       const toString = Object.prototype.toString
-      console.log(queryParams, allParams)
       // iterator queryParam and find item does not passed
       const valueNotPassed = queryParams.find(qp => {
         const { type, field, required } = qp
         const valueInParams = allParams[field]
         const isValid = toString.call(valueInParams).slice(8, -1) === type
-        if (!isValid) return true
+
+        const isValidValue =
+          valueInParams === 0 || valueInParams === false ? true : valueInParams
+
         if (required) {
-          return !valueInParams && !isValid
+          return !isValid || !isValidValue
         }
+        // 非必填没有该值的话不校验
+        if (!isValid && isValidValue) return true
         return false
       })
       if (valueNotPassed) {
         const { type, field, errMsg, required } = valueNotPassed
-        ctx.body = ctx.util.refail(
-          errMsg ||
-            `expect ${type}: ${field}" ${required ? 'required' : ''},
-            but got ${typeof allParams[field]}: ${JSON.stringify(allParams[field])}`
-        )
+        const warn = `expect ${field}: ${type} ${required ? 'is required' : ''},
+        but got ${typeof allParams[field]}: ${JSON.stringify(allParams[field])}`
+
+        ctx.body = ctx.util.refail(errMsg || warn)
         return
       }
 

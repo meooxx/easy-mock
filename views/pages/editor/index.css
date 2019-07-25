@@ -1,11 +1,6 @@
 @import '../../styles/base/var.css';
 
-.ivu-tabs-nav .ivu-tabs-tab-active {
-  color: white;
-}
-.ivu-tabs-nav .ivu-tabs-tab:hover {
-  color: white;
-}
+
 @c editor {
   position: fixed;
   top: 0;
@@ -42,7 +37,12 @@
     display: flex;
     align-items: center;
     box-shadow: 0 0 3px #000;
-
+    .ivu-tabs-nav .ivu-tabs-tab-active {
+      color: white;
+    }
+    .ivu-tabs-nav .ivu-tabs-tab:hover {
+      color: white;
+    }
     h2 {
       color: #fff;
       font-size: 13px;

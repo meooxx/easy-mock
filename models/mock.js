@@ -27,6 +27,6 @@ const schema = new Schema({
   }
 })
 
-schema.index({ project: 1, url: 1 }, { unique: true })
+schema.index({ project: 1, url: 1, method: 1 }, { unique: true })
 
 module.exports = mongoose.model('Mock', schema)

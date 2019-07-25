@@ -274,7 +274,7 @@ export default {
               const group = this.groups.filter(item => item.value === data.group)[0]
               this.$router.push(`/group/${group.value}?name=${group.label}`)
             } else {
-              this.$router.push('/')
+              this.$router.push('/individual')
             }
           }
         })
