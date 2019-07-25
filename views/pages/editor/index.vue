@@ -77,7 +77,7 @@
             </template>
           </TabPane>
         </Tabs>
-        
+
         <div class="em-editor__control">
           <div class="em-proj-detail__switcher">
             <ul>
@@ -135,7 +135,8 @@ export default {
         { label: 'String', value: 'String' },
         { label: 'Object', value: 'Object' },
         { label: 'Array', value: 'Array' },
-        { label: 'Number', value: 'Number' }
+        { label: 'Number', value: 'Number' },
+        { label: 'Boolean', value: 'Boolean' }
       ],
       temp: {
         url: '',
@@ -207,7 +208,7 @@ export default {
       this.temp.mode = this.mockData.mode
       this.temp.method = this.mockData.method
       this.temp.description = this.mockData.description
-      this.temp.tag = this.mockData.tag
+      this.temp.tag = this.mockData.tag || '其他'
       this.$nextTick(() => {
         this.temp.method = this.mockData.method
       })
@@ -218,6 +219,7 @@ export default {
       this.codeEditor.setValue(this.temp.mode)
       this.format()
     })
+    // 要获取最新 temp对象值, method 是在nextTick中设置的
     this.$nextTick(() => {
       this.inititalTemp = { ...this.temp }
     })
@@ -301,15 +303,19 @@ export default {
           return
         }
       }
+      const queryParams = this.params
+        .filter(p => !!p.field)
+        .map(({ _id, ...rest }) => rest)
       if (this.isEdit) {
+        const updatedData = {
+          ...this.temp,
+          id: this.mockData._id,
+          url: mockUrl,
+          queryParams
+        }
         api.mock
           .update({
-            data: {
-              ...this.temp,
-              id: this.mockData._id,
-              url: mockUrl,
-              queryParams: this.params
-            }
+            data: updatedData
           })
           .then(res => {
             if (res.data.success) {
@@ -317,13 +323,11 @@ export default {
                 this.$t('p.detail.editor.submit.updateSuccess')
               )
               this.inititalTemp = this.temp
+              this.params = queryParams
               if (this.autoClose) this.close()
             }
           })
       } else {
-        const queryParams = this.params
-          .filter(p => !!p.field)
-          .map(({ _id, ...rest }) => rest)
         api.mock
           .create({
             data: {
@@ -337,7 +341,10 @@ export default {
             if (res.data.success) {
               const { mock, projectUrl } = res.data.data
               this.$Message.success(this.$t('p.detail.create.success'))
+              // reload前会校验是否已经改过内容
+              // 更新 inititalTemp 保证新增完成ok后, 可以通过更改校验
               this.inititalTemp = this.temp
+              this.params = queryParams
               this.reload(mock, this.getBaseUrl(projectUrl))
             }
           })
@@ -348,9 +355,8 @@ export default {
       return projectUrl === '/' ? baseUrl : baseUrl + projectUrl
     },
     preview() {
-      window.open(
-        this.baseUrl + this.mockData.url + '#!method=' + this.mockData.method
-      )
+      const { url, method } = this.inititalTemp
+      window.open(`${this.baseUrl}/${url}#!method=${method}`)
     },
     isDity() {
       const keys = Object.keys(this.inititalTemp)
