@@ -69,7 +69,10 @@ export default {
           return res
         })
     },
-    CREATE({ commit, dispatch }, { route, mode, description, url, method }) {
+    CREATE(
+      { commit, dispatch },
+      { tag = '', route, mode, description, url, method, queryParams = [] }
+    ) {
       return api.mock
         .create({
           data: {
@@ -77,6 +80,8 @@ export default {
             url,
             method,
             description,
+            queryParams,
+            tag,
             project_id: route.params.id
           }
         })

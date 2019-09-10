@@ -505,7 +505,7 @@ module.exports = class MockController {
       // assign param in path, query or body
       // Object.assign(allParams, ctx.query, ctx.request.body)
       Object.assign(allParams, ctx.request.body)
-      console.log(queryParams, allParams, ctx.request.body)
+      // console.log(queryParams, allParams, ctx.request.body)
       const toString = Object.prototype.toString
       // iterator queryParam and find item does not passed
       const valueNotPassed = queryParams.find(qp => {
