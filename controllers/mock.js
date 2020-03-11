@@ -369,8 +369,12 @@ module.exports = class MockController {
   static async getMockAPI(ctx) {
     const { query, body } = ctx.request
     const method = ctx.method.toLowerCase()
+    // callback 带有 callback
     const jsonpCallback =
-      query.jsonp_param_name && (query[query.jsonp_param_name] || 'callback')
+      (query.jsonp_param_name && query[query.jsonp_param_name]) ||
+      query.callback
+    //  query.jsonp_param_name && (query[query.jsonp_param_name] || 'callback')
+
     let { projectId, mockURL } = ctx.pathNode
     const redisKey = 'project:' + projectId
     let apiData, apis, api
@@ -531,7 +535,9 @@ module.exports = class MockController {
         ctx.body = ctx.util.refail(errMsg || warn)
         return
       }
-
+      //  mode: api.mode,
+      // template: new Function(`return ${api.mode}`) // eslint-disable-line
+      //
       vm.run('Mock.mock(new Function("return " + mode)())') // 数据验证，检测 setTimeout 等方法
       apiData = vm.run('Mock.mock(template())') // 解决正则表达式失效的问题
 
