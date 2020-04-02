@@ -222,7 +222,7 @@ export default {
           return
         }
         const list = this.$store.state.group.list
-        if (list.indexOf(id) !== -1) {
+        if (list.find(l => l._id === id)) {
           this.$Message.success(
             this.$t('p.group.join.success', { groupId: id })
           )
