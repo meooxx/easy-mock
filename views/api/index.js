@@ -15,7 +15,7 @@ const instance = axios.create({
 const loading = {
   count: 0,
   isLoading: false,
-  start () {
+  start() {
     this.count += 1
     if (!this.isLoading) {
       setTimeout(() => {
@@ -26,18 +26,18 @@ const loading = {
       }, 1000)
     }
   },
-  cancel () {
+  cancel() {
     this.count -= 1
     if (this.count <= 0) {
       this.done()
     }
   },
-  done () {
+  done() {
     this.count = 0
     this.isLoading = false
     iView.LoadingBar.finish()
   },
-  checkLoading () {
+  checkLoading() {
     const el = document.querySelector('.ivu-loading-bar')
     if (this.isLoading && !el) {
       iView.LoadingBar.start()
@@ -45,59 +45,65 @@ const loading = {
   }
 }
 
-instance.interceptors.request.use((config) => {
-  let token
-  if (isClient) {
-    loading.start()
-    token = cookies.get(conf.storageNamespace + 'token')
-  } else {
-    token = serverCookies.get(conf.storageNamespace + 'token')
-  }
-  config.headers.Authorization = `Bearer ${token}`
-  return config
-}, error => Promise.reject(error))
+instance.interceptors.request.use(
+  config => {
+    let token
+    if (isClient) {
+      loading.start()
+      token = cookies.get(conf.storageNamespace + 'token')
+    } else {
+      token = serverCookies.get(conf.storageNamespace + 'token')
+    }
+    config.headers.Authorization = `Bearer ${token}`
+    return config
+  },
+  error => Promise.reject(error)
+)
 
-instance.interceptors.response.use((res) => {
-  const messageUnless = res.config.messageUnless || []
-  const body = res.data
+instance.interceptors.response.use(
+  res => {
+    const messageUnless = res.config.messageUnless || []
+    const body = res.data
 
-  if (isClient) loading.cancel()
-  if (body.success === false) {
-    if (body.code === 10001) {
-      body.data.forEach((date) => {
+    if (isClient) loading.cancel()
+    if (body.success === false) {
+      if (body.code === 10001) {
+        body.data.forEach(date => {
+          iView.Notice.error({
+            title: 'Error',
+            desc: date[Object.keys(date)[0]]
+          })
+        })
+      } else if (messageUnless.indexOf(body.message) === -1) {
         iView.Notice.error({
           title: 'Error',
-          desc: date[Object.keys(date)[0]]
+          desc: body.message
         })
-      })
-    } else if (messageUnless.indexOf(body.message) === -1) {
-      iView.Notice.error({
-        title: 'Error',
-        desc: body.message
-      })
-    }
-    return Promise.reject(res)
-  }
-  return res
-}, (error) => {
-  const res = error.response
-  if (isClient) loading.cancel()
-  if (res) {
-    if (res.status === 401 && /authentication/i.test(res.data.error)) {
-      if (isClient) {
-        router.push('/log-out')
-      } else {
-        return Promise.reject({ code: 401 }) // eslint-disable-line
       }
-    } else if (isClient && res.data && res.data.error) {
-      iView.Notice.error({
-        title: 'Error',
-        desc: res.data.error
-      })
+      return Promise.reject(res)
     }
+    return res
+  },
+  error => {
+    const res = error.response
+    if (isClient) loading.cancel()
+    if (res) {
+      if (res.status === 401 && /authentication/i.test(res.data.error)) {
+        if (isClient) {
+          router.push('/log-out')
+        } else {
+          return Promise.reject({ code: 401 }) // eslint-disable-line
+        }
+      } else if (isClient && res.data && res.data.error) {
+        iView.Notice.error({
+          title: 'Error',
+          desc: res.data.error
+        })
+      }
+    }
+    Promise.reject(error)
   }
-  Promise.reject(error)
-})
+)
 
 const initAPI = _router => (router = _router)
 const createAPI = (url, method, config) => {
@@ -117,7 +123,7 @@ const createExportForm = (url, data) => {
   form.action = url
 
   if (Array.isArray(data)) {
-    data.forEach((d) => {
+    data.forEach(d => {
       const input = document.createElement('input')
       input.name = 'ids[]'
       input.value = d
@@ -152,7 +158,8 @@ const project = {
   create: config => createAPI('/project/create', 'post', config),
   update: config => createAPI('/project/update', 'post', config),
   updateSwagger: config => createAPI('/project/sync/swagger', 'post', config),
-  updateWorkbench: config => createAPI('/project/update_workbench', 'post', config),
+  updateWorkbench: config =>
+    createAPI('/project/update_workbench', 'post', config),
   delete: config => createAPI('/project/delete', 'post', config)
 }
 
@@ -170,19 +177,12 @@ const group = {
   join: config => createAPI('/group/join', 'post', config),
   create: config => createAPI('/group/create', 'post', config),
   update: config => createAPI('/group/update', 'post', config),
-  delete: config => createAPI('/group/delete', 'post', config)
+  delete: config => createAPI('/group/delete', 'post', config),
+  all: config => createAPI('/group/all', 'get', config)
 }
 
 const dashboard = {
   getList: config => createAPI('/dashboard', 'get', config)
 }
 
-export {
-  u,
-  project,
-  mock,
-  util,
-  group,
-  dashboard,
-  initAPI
-}
+export { u, project, mock, util, group, dashboard, initAPI }

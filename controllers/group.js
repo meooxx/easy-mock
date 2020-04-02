@@ -12,8 +12,11 @@ module.exports = class GroupController {
    * @param Object ctx
    */
 
-  static async create (ctx) {
-    const name = ctx.checkBody('name').notEmpty().len(3, 16).value
+  static async create(ctx) {
+    const name = ctx
+      .checkBody('name')
+      .notEmpty()
+      .len(3, 16).value
     const uid = ctx.state.user.id
 
     if (ctx.errors) {
@@ -38,7 +41,7 @@ module.exports = class GroupController {
    * @param Object ctx
    */
 
-  static async list (ctx) {
+  static async list(ctx) {
     const uid = ctx.state.user.id
     const keywords = ctx.query.keywords
     let groups
@@ -54,12 +57,31 @@ module.exports = class GroupController {
     ctx.body = ctx.util.resuccess(groups)
   }
 
+  static async allGroups(ctx) {
+    // const uid = ctx.state.user.id
+    try {
+      // const userGroups = (await UserGroupProxy.find({ user: uid })).map(o =>
+      //   o.group._id.toString()
+      // )
+
+      const groups = (await GroupProxy.find())
+        // .filter(o => {
+        //   return userGroups.indexOf(o._id.toString()) === -1
+        // })
+        .map(o => _.pick(o, ft.group))
+      ctx.body = ctx.util.resuccess(groups)
+      return
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   /**
    * 加入团队
    * @param Object ctx
    */
 
-  static async join (ctx) {
+  static async join(ctx) {
     const uid = ctx.state.user.id
     const id = ctx.checkBody('id').notEmpty().value
 
@@ -78,7 +100,7 @@ module.exports = class GroupController {
    * @param Object ctx
    */
 
-  static async delete (ctx) {
+  static async delete(ctx) {
     const uid = ctx.state.user.id
     const id = ctx.checkBody('id').notEmpty().value
 
@@ -91,14 +113,16 @@ module.exports = class GroupController {
     const projects = await Project.find({ group: id })
     const projectIds = projects.map(project => project.id)
 
-    if (group) { // 团队创建者删除团队
+    if (group) {
+      // 团队创建者删除团队
       if (projects.length > 0) {
         ctx.body = ctx.util.refail('解散团队前请先删除该团队下所有的项目')
         return
       }
       await GroupProxy.del({ _id: id })
       await UserGroupProxy.del({ group: id })
-    } else { // 团队成员离开团队
+    } else {
+      // 团队成员离开团队
       await UserGroupProxy.del({ user: uid, group: id })
       await UserProjectProxy.del({ user: uid, project: { $in: projectIds } })
     }
@@ -111,10 +135,13 @@ module.exports = class GroupController {
    * @param Object ctx
    */
 
-  static async update (ctx) {
+  static async update(ctx) {
     const uid = ctx.state.user.id
     const id = ctx.checkBody('id').notEmpty().value
-    const name = ctx.checkBody('name').notEmpty().len(3, 16).value
+    const name = ctx
+      .checkBody('name')
+      .notEmpty()
+      .len(3, 16).value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)

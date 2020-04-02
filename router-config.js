@@ -46,6 +46,7 @@ exports.api = apiRouter
   .post('/u/register', user.register)
 
   .get('/group', group.list)
+  .get('/group/all', group.allGroups)
   .post('/group/join', group.join)
   .post('/group/create', group.create)
   .post('/group/delete', group.delete)

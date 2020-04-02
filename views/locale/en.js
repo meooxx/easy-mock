@@ -35,7 +35,7 @@ export default {
       modal: {
         tab: {
           create: 'Create New Team | Name | Make your team name spical to avoid accidently access',
-          join: 'Join a Team | Name | Please type team name',
+          join: 'Join a Team | Name | Please select a team name',
           edit: 'Edit Team | Name | Make your team name spical to avoid accidently access'
         }
       },
